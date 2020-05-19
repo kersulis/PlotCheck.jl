@@ -11,7 +11,7 @@ If optional `png_path` is provided, save a PNG image of the reference plot.
 """
 function generate_reference(reference_script_path::String, png_path::String="")
     reference = include(reference_script_path)
-    plot!(reference, background_color_inside=:lightgray)
+    plot!(reference, background_color_outside=:lightgray)
 
     if !isempty(png_path)
         savefig(reference, png_path)

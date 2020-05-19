@@ -3,11 +3,11 @@
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[BinaryProvider]]
-deps = ["Libdl", "Logging", "SHA"]
-git-tree-sha1 = "428e9106b1ff27593cbd979afac9b45b82372b8c"
-uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.9"
+[[Bzip2_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "3663bfffede2ef41358b6fc2e1d8a6d50b3c3904"
+uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
+version = "1.0.6+2"
 
 [[ColorSchemes]]
 deps = ["ColorTypes", "Colors", "FixedPointNumbers", "Random", "StaticArrays"]
@@ -57,15 +57,33 @@ deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FFMPEG]]
-deps = ["BinaryProvider", "Libdl"]
-git-tree-sha1 = "9143266ba77d3313a4cf61d8333a1970e8c5d8b6"
+deps = ["FFMPEG_jll"]
+git-tree-sha1 = "c82bef6fc01e30d500f588cd01d29bdd44f1924e"
 uuid = "c87230d0-a227-11e9-1b43-d7ebe4e7570a"
-version = "0.2.4"
+version = "0.3.0"
+
+[[FFMPEG_jll]]
+deps = ["Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "LAME_jll", "LibVPX_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "Pkg", "Zlib_jll", "libass_jll", "libfdk_aac_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
+git-tree-sha1 = "0fa07f43e5609ea54848b82b4bb330b250e9645b"
+uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
+version = "4.1.0+3"
 
 [[FixedPointNumbers]]
 git-tree-sha1 = "3ba9ea634d4c8b289d590403b4a06f8e227a6238"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.0"
+
+[[FreeType2_jll]]
+deps = ["Bzip2_jll", "Libdl", "Pkg", "Zlib_jll"]
+git-tree-sha1 = "7d900f32a3788d4eacac2bfa3bf5c770179c8afd"
+uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
+version = "2.10.1+2"
+
+[[FriBidi_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "2f56bee16bd0151de7b6a1eeea2ced190a2ad8d4"
+uuid = "559328eb-81f9-559d-9380-de523a88c83c"
+version = "1.0.5+3"
 
 [[GR]]
 deps = ["Base64", "DelimitedFiles", "LinearAlgebra", "Printf", "Random", "Serialization", "Sockets", "Test", "UUIDs"]
@@ -89,8 +107,21 @@ git-tree-sha1 = "b34d7cef7b337321e97d22242c3c2b91f476748e"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.0"
 
+[[LAME_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "221cc8998b9060677448cbb6375f00032554c4fd"
+uuid = "c1c5ebd0-6772-5130-a774-d5fcae4a789d"
+version = "3.100.0+1"
+
 [[LibGit2]]
+deps = ["Printf"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
+
+[[LibVPX_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "e3549ca9bf35feb9d9d954f4c6a9032e92f46e7c"
+uuid = "dd192d2f-8180-539f-9fb4-cc70b1dcf69a"
+version = "1.8.1+1"
 
 [[Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -125,6 +156,24 @@ git-tree-sha1 = "928b8ca9b2791081dc71a51c55347c27c618760f"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "0.3.3"
 
+[[Ogg_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "59cf7a95bf5ac39feac80b796e0f39f9d69dc887"
+uuid = "e7412a2a-1a6e-54c0-be00-318e2571c051"
+version = "1.3.4+0"
+
+[[OpenSSL_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "d2a6f25262d568b5a7e454cf7ff5066a79d16c7d"
+uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
+version = "1.1.1+2"
+
+[[Opus_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "002c18f222a542907e16c83c64a1338992da7e2c"
+uuid = "91d4177d-7536-5919-b921-800302f37372"
+version = "1.3.1+1"
+
 [[OrderedCollections]]
 git-tree-sha1 = "12ce190210d278e12644bcadf5b21cbdcf225cd3"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
@@ -137,7 +186,7 @@ uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "1.0.4"
 
 [[Pkg]]
-deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
+deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [[PlotThemes]]
@@ -244,3 +293,39 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
+
+[[Zlib_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "a2e0d558f6031002e380a90613b199e37a8565bf"
+uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
+version = "1.2.11+10"
+
+[[libass_jll]]
+deps = ["Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "Libdl", "Pkg", "Zlib_jll"]
+git-tree-sha1 = "027a304b2a90de84f690949a21f94e5ae0f92c73"
+uuid = "0ac62f75-1d6f-5e53-bd7c-93b484bb37c0"
+version = "0.14.0+2"
+
+[[libfdk_aac_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "480c7ed04f68ea3edd4c757f5db5b6a0a4e0bd99"
+uuid = "f638f0a6-7fb0-5443-88ba-1cc74229b280"
+version = "0.1.6+2"
+
+[[libvorbis_jll]]
+deps = ["Libdl", "Ogg_jll", "Pkg"]
+git-tree-sha1 = "6a66f65b5275dfa799036c8a3a26616a0a271c4a"
+uuid = "f27f6e37-5d2b-51aa-960f-b287f2bc3b7a"
+version = "1.3.6+4"
+
+[[x264_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "d89346fe63a6465a9f44e958ac0e3d366af90b74"
+uuid = "1270edf5-f2f9-52d2-97e9-ab00b5d0237a"
+version = "2019.5.25+2"
+
+[[x265_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "61324ad346b00a6e541896b94201c9426591e43a"
+uuid = "dfaa095f-4041-5dcd-9319-2fabd8486b76"
+version = "3.0.0+1"

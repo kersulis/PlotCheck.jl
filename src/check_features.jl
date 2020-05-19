@@ -19,7 +19,7 @@ is_loglog_plot(subplot::Plots.Subplot) = (get_xscale(subplot) == :log10) && (get
 "Return `true` if subplot has an x-axis label."
 has_xlabel(subplot::Plots.Subplot) = get_xlabel(subplot) != ""
 
-"Return `true` if subplot has a y-axis label." 
+"Return `true` if subplot has a y-axis label."
 has_ylabel(subplot::Plots.Subplot) = get_ylabel(subplot) != ""
 
 # series-level checks
@@ -75,14 +75,16 @@ function marker_colors_unique(subplot::Plots.Subplot)
     return all_unique((get_markercolor(s) for s in series_marker(subplot)))
 end
 
-function check_axis_labels(subplot::Plots.Subplot)    
+function check_axis_labels(subplot::Plots.Subplot)
     @assert has_xlabel(subplot) "The horizontal axis is missing a label."
     @assert has_ylabel(subplot) "The vertical axis is missing a label."
     return
 end
 
 function check_subplot_title(subplot::Plots.Subplot)
-    @assert has_title(subplot) "Subplot is missing a title."
+    if !has_title(subplot)
+        @warn "Subplot is missing a title."
+    end
     return
 end
 
@@ -92,11 +94,11 @@ Display warning messages in the following cases:
 - subplot re-uses a line color for multiple series
 - at least one series has both visible lines and markers, but their colors *do not* match
 """
-function check_color_uniqueness(subplot::Plots.Subplot)    
+function check_color_uniqueness(subplot::Plots.Subplot)
     @assert path_matches_marker(subplot) "Series marker and line colors should match."
     @assert line_colors_unique(subplot) "Line colors should be unique."
     @assert marker_colors_unique(subplot) "Marker colors should be unique."
-    return 
+    return
 end
 
 """

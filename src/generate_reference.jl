@@ -1,4 +1,4 @@
-export generate_reference
+export generate_reference, generate_references
 
 """
     reference = generate_reference(reference_script_path[, png_path])
@@ -17,4 +17,13 @@ function generate_reference(reference_script_path::String, png_path::String="")
         savefig(reference, png_path)
     end
     return reference
+end
+
+function generate_references(reference_script_folder::String, png_folder::String)
+    for filename in readdir(reference_script_folder)
+        filepath = joinpath(reference_script_folder, filename)
+        figure_name = split(filename, ".") |> first
+        pngpath = joinpath(png_folder, figure_name) * ".png"
+        generate_reference(filepath, pngpath)
+    end
 end

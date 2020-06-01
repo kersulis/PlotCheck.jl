@@ -151,3 +151,15 @@ end
 
     @test_logs (:warn, "Line color for series 'Series 1' does not match reference.") compare_plots(submission, reference)
 end
+
+## 
+# reference with two series
+reference = plot([1, 2, 3], [3, 2, 1]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue, label="Series 1")
+plot!([1, 2, 3], [4, 3, 2], color=:red, label="Series 2", marker=:o)
+
+# Series with label 'Series 2' missing.
+submission = plot([1, 2, 3], [3, 2, 1]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue, label="Series 1")
+
+compare_plots(submission, reference)
+
+@warn "test"

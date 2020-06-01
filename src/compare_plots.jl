@@ -1,3 +1,5 @@
+using Logging: with_logger
+
 export compare_plots
 
 """
@@ -18,12 +20,14 @@ function compare_plots(submission::Plots.Plot, reference::Plots.Plot)
     sub_subplots = submission |> get_subplots
     ref_subplots = reference |> get_subplots
 
-    # compare number of subplots
-    @assert length(sub_subplots) == length(ref_subplots) "Incorrect number of subplots."
+    with_logger(_LOGGER) do
+        # compare number of subplots
+        @assert length(sub_subplots) == length(ref_subplots) "Incorrect number of subplots."
 
-    # compare subplots pairwise
-    for (idx, (sub_subplot, ref_subplot)) in enumerate(zip(sub_subplots, ref_subplots))
-        compare_subplots(sub_subplot, ref_subplot, string(idx))
+        # compare subplots pairwise
+        for (idx, (sub_subplot, ref_subplot)) in enumerate(zip(sub_subplots, ref_subplots))
+            compare_subplots(sub_subplot, ref_subplot, string(idx))
+        end
     end
     return
 end
@@ -36,7 +40,10 @@ compare `submission` and `reference`.
 """
 function compare_plots(submission::Plots.Plot, reference_script_path::String)
     reference = include(reference_script_path)
-    compare_plots(submission, reference)
+
+    with_logger(_LOGGER) do
+        compare_plots(submission, reference)
+    end
     return
 end
 
@@ -63,7 +70,11 @@ function compare_subplots(submission::Plots.Subplot, reference::Plots.Subplot, i
         sub_series_labels = [get_label(series) for series in sub_series_list]
         for ref_series in get_series_list(reference)
             ref_label = ref_series |> get_label
-            @assert ref_label in sub_series_labels "Series with label '$(ref_label)' missing."
+            if !(ref_label in sub_series_labels)
+                @warn "Series with label '$(ref_label)' missing."
+                continue
+            end
+            # @assert ref_label in sub_series_labels "Series with label '$(ref_label)' missing."
             sub_series_ind = findfirst(sub_series_labels .== ref_label)
             sub_series = sub_series_list[sub_series_ind]
             compare_series(sub_series, ref_series)

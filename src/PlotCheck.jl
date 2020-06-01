@@ -1,18 +1,17 @@
 module PlotCheck
 
-using Plots
+using Plots, Memento
 
-# const _LOGGER = Memento.getlogger(@__MODULE__)
+# for some reason, any use of Memento.config! causes a segfault
+# (on Windows and Linux)
+# const _LOGGER = Memento.config!("info"; fmt="{name} {level}: {msg}")
 
-# const _LOGGER = logger = Memento.config!("debug"; fmt="[{level} | {name}]: {msg}")
-# __init__() = Memento.register(_LOGGER)
-
-# Memento.config!(Memento.getlogger("PlotCheck"), "info"; fmt="PlotCheck {level}: {msg}")
+const _LOGGER = Memento.getlogger(@__MODULE__)
+__init__() = Memento.register(_LOGGER)
 
 include("access_features.jl")
 include("check_features.jl")
 include("compare_plots.jl")
 include("generate_reference.jl")
-include("logger.jl")
 
 end # module

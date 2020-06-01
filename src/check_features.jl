@@ -76,14 +76,18 @@ function marker_colors_unique(subplot::Plots.Subplot)
 end
 
 function check_axis_labels(subplot::Plots.Subplot)
-    @assert has_xlabel(subplot) "The horizontal axis is missing a label."
-    @assert has_ylabel(subplot) "The vertical axis is missing a label."
+    if !has_xlabel(subplot)
+        warn(_LOGGER, "The horizontal axis is missing a label.")
+    end
+    if !has_ylabel(subplot)
+        warn(_LOGGER, "The vertical axis is missing a label.")
+    end
     return
 end
 
 function check_subplot_title(subplot::Plots.Subplot)
     if !has_title(subplot)
-        @warn "Subplot is missing a title."
+        warn(_LOGGER, "Subplot is missing a title.")
     end
     return
 end
@@ -95,9 +99,15 @@ Display warning messages in the following cases:
 - at least one series has both visible lines and markers, but their colors *do not* match
 """
 function check_color_uniqueness(subplot::Plots.Subplot)
-    @assert path_matches_marker(subplot) "Series marker and line colors should match."
-    @assert line_colors_unique(subplot) "Line colors should be unique."
-    @assert marker_colors_unique(subplot) "Marker colors should be unique."
+    if !path_matches_marker(subplot)
+        warn(_LOGGER, "Series marker and line colors should match.")
+    end
+    if !line_colors_unique(subplot)
+        warn(_LOGGER, "Line colors should be unique.")
+    end
+    if !marker_colors_unique(subplot)
+        warn(_LOGGER, "Marker colors should be unique.")
+    end
     return
 end
 

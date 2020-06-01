@@ -15,6 +15,7 @@ function generate_reference(reference_script_path::String, png_path::String="")
 
     if !isempty(png_path)
         savefig(reference, png_path)
+        info(_LOGGER, "$(png_path) created based on reference figure script at $(reference_script_path).")
     end
     return reference
 end

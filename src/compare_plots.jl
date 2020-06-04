@@ -1,4 +1,4 @@
-export compare_plots
+export compare_plots, check_plot
 
 """
     compare_plots(submission, reference)
@@ -158,4 +158,21 @@ function compare_data(submission::Plots.Series, reference::Plots.Series, pct_dif
         info(_LOGGER, "y-axis values for series '$(sub_label)' do not match reference.")
     end
     return
+end
+
+macro varname(var)
+    return string(var)
+end
+
+function check_plot(plot::Plots.Plot, plot_dir::String="./plot")
+    plot_name = @varname plot
+    script_path = joinpath(plot_dir, plot_name, "script.jl")
+
+    if isfile(script_path)
+        info(_LOGGER, "Reference plot found; comparing.")
+        return compare_plots(plot, script_path)
+    else
+        info(_LOGGER, "No reference plot found; basic checks only.")
+        return check_plot_basics(plot)
+    end
 end

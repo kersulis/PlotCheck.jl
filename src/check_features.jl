@@ -1,4 +1,4 @@
-export check_plot
+export check_plot_basics
 
 # subplot-level checks
 "Return `true` if subplot has a title."
@@ -127,14 +127,14 @@ function check_subplot(subplot::Plots.Subplot)
 end
 
 """
-    check_plot(plot)
+    check_plot_basics(plot)
 
 Check the following for each subplot in `plot`:
 - Subplot has a title
 - Subplot has xlabel and ylabel
 - Series colors are unique
 """
-function check_plot(plot::Plots.Plot)
+function check_plot_basics(plot::Plots.Plot)
     for subplot in get_subplots(plot)
         check_subplot(subplot)
     end

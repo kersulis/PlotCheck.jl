@@ -18,7 +18,7 @@ function generate_reference(script_path::String, img_path::String="")
      background_color_inside=:lightgray
      )
 
-    if !isempty(png_path)
+    if !isempty(img_path)
         savefig(reference, img_path)
         info(_LOGGER, "$(img_path) generated from $(script_path).")
     end
@@ -34,14 +34,16 @@ Assume reference_folder has a subdirectory for each plot
     single .jl file which returns the reference plot upon `include()`.
 """
 function generate_references(plot_folder::String, img_ext::String=".png")
-    for folder in readdir(plot_folder; join=true)
-        files = readdir(folder)
+    folders = filter(x -> x[1] != '.', readdir(plot_folder))
+    for folder in folders
+        println(joinpath(plot_folder, folder))
+        files = readdir(joinpath(plot_folder, folder))
 
         script_name = filter(x -> split(x, ".") |> last == "jl", files) |> first
-        script_path = joinpath(folder, script_name)
+        script_path = joinpath(plot_folder, folder, script_name)
 
         img_name = basename(folder)
-        img_path = joinpath(folder, img_name) * img_ext
+        img_path = joinpath(plot_folder, folder, img_name) * img_ext
 
         generate_reference(script_path, img_path)
     end

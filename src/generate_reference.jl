@@ -10,7 +10,7 @@ Assuming `include(reference_script_path)` returns the desired
 
 If optional `png_path` is provided, save a PNG image of the reference plot.
 """
-function generate_reference(script_path::String, png_path::String="")
+function generate_reference(script_path::String, img_path::String="")
     reference = include(script_path)
     plot!(
     reference;
@@ -19,8 +19,8 @@ function generate_reference(script_path::String, png_path::String="")
      )
 
     if !isempty(png_path)
-        savefig(reference, png_path)
-        info(_LOGGER, "$(png_path) generated from $(script_path).")
+        savefig(reference, img_path)
+        info(_LOGGER, "$(img_path) generated from $(script_path).")
     end
     return reference
 end
@@ -33,15 +33,15 @@ Assume reference_folder has a subdirectory for each plot
     named after a PNG file we wish to create, and contains a
     single .jl file which returns the reference plot upon `include()`.
 """
-function generate_references(reference_folder::String, img_folder::String, img_ext::String=".png")
-    for plot_folder in readdir(reference_folder; join=true)
-        files = readdir(plot_folder)
+function generate_references(plot_folder::String, img_ext::String=".png")
+    for folder in readdir(plot_folder; join=true)
+        files = readdir(folder)
 
         script_name = filter(x -> split(x, ".") |> last == "jl", files) |> first
-        script_path = joinpath(plot_folder, script_name)
+        script_path = joinpath(folder, script_name)
 
-        img_name = basename(plot_folder)
-        img_path = joinpath(img_folder, img_name) * img_ext
+        img_name = basename(folder)
+        img_path = joinpath(folder, img_name) * img_ext
 
         generate_reference(script_path, img_path)
     end

@@ -1,4 +1,4 @@
-export compare_plots, check_plot
+export compare_plots, @check_plot
 
 """
     compare_plots(submission, reference)
@@ -160,19 +160,15 @@ function compare_data(submission::Plots.Series, reference::Plots.Series, pct_dif
     return
 end
 
-macro varname(var)
-    return string(var)
-end
-
-function check_plot(plot::Plots.Plot, plot_dir::String="./plot")
-    plot_name = @varname plot
+macro check_plot(plot, plot_dir="./plot")
+    plot_name = string(:($(plot)))
     script_path = joinpath(plot_dir, plot_name, "script.jl")
 
     if isfile(script_path)
-        info(_LOGGER, "Reference plot found; comparing.")
-        return compare_plots(plot, script_path)
+        @info "Comparing to reference plot."
+        return :(compare_plots($(plot), $(script_path)))
     else
-        info(_LOGGER, "No reference plot found; basic checks only.")
-        return check_plot_basics(plot)
+        @info "No reference plot found; basic checks only."
+        return :(check_plot_basics($(plot)))
     end
 end

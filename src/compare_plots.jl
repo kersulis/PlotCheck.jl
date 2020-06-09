@@ -165,10 +165,10 @@ macro check_plot(plot, plot_dir="./plot")
     script_path = joinpath(plot_dir, plot_name, "script.jl")
 
     if isfile(script_path)
-        @info "Comparing to reference plot."
+        info(_LOGGER, "Comparing to reference plot.")
         return :(compare_plots($(esc(plot)), $(script_path)))
     else
-        @info "No reference plot found; basic checks only."
+        info(_LOGGER, "No reference plot found; basic checks only.")
         return :(check_plot_basics($(esc(plot))))
     end
 end

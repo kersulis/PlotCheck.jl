@@ -166,9 +166,9 @@ macro check_plot(plot, plot_dir="./plot")
 
     if isfile(script_path)
         @info "Comparing to reference plot."
-        return :(compare_plots($(plot), $(script_path)))
+        return :(compare_plots($(esc(plot)), $(script_path)))
     else
         @info "No reference plot found; basic checks only."
-        return :(check_plot_basics($(plot)))
+        return :(check_plot_basics($(esc(plot))))
     end
 end

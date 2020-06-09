@@ -1,14 +1,15 @@
 export generate_reference, generate_references
 
 """
-    reference = generate_reference(reference_script_path[, png_path])
+    reference = generate_reference(reference_script_path[, img_path])
 
 Assuming `include(reference_script_path)` returns the desired
     reference plot `reference`, change the plot's appearance
     to distinguish it from submissions (so one cannot simply
     turn in the reference plot as one's own).
 
-If optional `png_path` is provided, save a PNG image of the reference plot.
+If optional `img_path` (with appropriate extension) is provided,
+    save an image of the reference plot at that location.
 """
 function generate_reference(script_path::String, img_path::String="")
     reference = include(script_path)
@@ -26,12 +27,13 @@ function generate_reference(script_path::String, img_path::String="")
 end
 
 """
-    generate_references(reference_folder, png_folder)
+    generate_references(plot_folder[, img_ext])
 
-Assume reference_folder has a subdirectory for each plot
-    we wish to create a reference plot for. Each subdirectory is
-    named after a PNG file we wish to create, and contains a
-    single .jl file which returns the reference plot upon `include()`.
+Assume plot_folder has a subdirectory for each plot
+    we wish to create a reference for. Each such subdirectory is presumed
+    to contain a single `.jl` file, which returns the desired reference
+    plot upon `include()`. The reference plot is saved with the indicated
+    extension, and named after the subdirectory.
 """
 function generate_references(plot_folder::String, img_ext::String=".png")
     folders = filter(x -> x[1] != '.', readdir(plot_folder))

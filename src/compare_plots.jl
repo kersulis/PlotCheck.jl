@@ -103,7 +103,15 @@ function compare_paths(submission::Plots.Series, reference::Plots.Series)
         warn(_LOGGER, "Series '$(sub_label)' should have line segments connecting points.")
     end
 
-    if get_linecolor(submission) != get_linecolor(reference)
+    color_sub, color_ref = get_linecolor(submission), get_linecolor(reference)
+
+    # do not compare all 256 colors of a gradient
+    # (handles the heatmap case)
+    if typeof(color_ref) <: PlotUtils.ColorGradient
+        return
+    end
+
+    if color_sub != color_ref
         warn(_LOGGER, "Line color for series '$(sub_label)' does not match reference.")
     end
 end
@@ -157,8 +165,21 @@ function compare_data(submission::Plots.Series, reference::Plots.Series, pct_dif
     if maximum(pct_diff.(ysub, yref)) > pct_diff_tol
         info(_LOGGER, "y-axis values for series '$(sub_label)' do not match reference.")
     end
+
+    # if there is z data, check that also
+    if !isnothing(get_zdata(reference))
+        zsub, zref = get_zdata(submission), get_zdata(reference)
+        if get_seriestype(reference) == :heatmap
+            if maximum(pct_diff.(zsub.surf, zref.surf)) > pct_diff_tol
+                info(_LOGGER, "Heatmap z-data for series '$(sub_label)' does not match reference.")
+            end
+        elseif maximum(pct_diff.(zsub, zref)) > pct_diff_tol
+            info(_LOGGER, "z-axis values for series '$(sub_label)' do not match reference.")
+        end
+    end
     return
 end
+
 
 """
 Recursively search `dir` for a subdirectory with the same name as
@@ -166,7 +187,13 @@ Recursively search `dir` for a subdirectory with the same name as
 """
 macro check_plot(plot, dir="./plot")
     plot_name = string(:($(plot)))
-    script_folder = folder_search(dir, plot_name)
+    
+    if !isdir(:($(dir)))
+        info(_LOGGER, "No reference directory found; basic checks only.")
+        return :(check_plot_basics($(esc(plot))))
+    end
+
+    script_folder = folder_search(:($(dir)), plot_name)
 
     if isnothing(script_folder)
         info(_LOGGER, "No reference plot found; basic checks only.")
@@ -174,7 +201,7 @@ macro check_plot(plot, dir="./plot")
     end
 
     jl_files = filter(f -> f[(end - 2):end] == ".jl", readdir(script_folder))
-    
+
     if length(jl_files) == 0
         error(_LOGGER, "Plot script missing in $(script_folder)")
     elseif length(jl_files) > 1

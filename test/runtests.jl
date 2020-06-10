@@ -163,9 +163,7 @@ end
 
 @testset "@check_plot" begin
     area_perimeter_vs_radius = generate_reference(joinpath("./plot", "area_perimeter_vs_radius", "plotscript.jl"))
-    @check_plot area_perimeter_vs_radius @__DIR__
-
-    "/home/jk/.julia/dev/PlotCheck/test/plot"
+    @check_plot area_perimeter_vs_radius "/home/jk/.julia/dev/PlotCheck/test/plot"
 
     heatmap_test = generate_reference(joinpath("./plot", "heatmap_test", "plotscript.jl"))
     @check_plot heatmap_test "/home/jk/.julia/dev/PlotCheck/test/plot"

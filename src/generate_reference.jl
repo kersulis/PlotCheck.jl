@@ -17,7 +17,8 @@ function generate_reference(script_path::String, img_path::String="")
     plot!(
     reference;
      background_color_outside=:lightgray,
-     background_color_inside=:lightgray
+     background_color_inside=:lightgray,
+     margin=(10.0 * Plots.mm)
      )
 
     if !isempty(img_path)

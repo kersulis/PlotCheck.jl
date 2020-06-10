@@ -1,7 +1,7 @@
 using Plots, PlotCheck, Test
 
 @testset "path plot" begin
-    p = include("./reference_plot.jl")
+    p = include("./plot/multiple_subplots/plotscript.jl")
     subplot = PlotCheck.get_subplots(p)[1]
 
     @test PlotCheck.has_title(subplot)
@@ -25,7 +25,7 @@ using Plots, PlotCheck, Test
 end
 
 @testset "scatter plot" begin
-    p = include("./reference_plot.jl")
+    p = include("./plot/multiple_subplots/plotscript.jl")
     subplot = PlotCheck.get_subplots(p)[2]
 
     @test PlotCheck.has_title(subplot)
@@ -45,7 +45,7 @@ end
 end
 
 @testset "bad colors" begin
-    p = include("./reference_plot.jl")
+    p = include("./plot/multiple_subplots/plotscript.jl")
     subplot = PlotCheck.get_subplots(p)[3]
 
     @test PlotCheck.get_title(subplot) == "bad colors"
@@ -61,33 +61,33 @@ end
 @testset "check_plot" begin
     # plot check works if axes are labeled and there is a title
     p = plot([1, 2, 3], [4, 3, 2]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue)
-    @test_nowarn check_plot(p)
+    @check_plot p
 
     # fails if no xlabel or ylabel
     plot!(p; xlabel="")
-    check_plot(p)
+    @check_plot p
     plot!(p; xlabel="xlabel", ylabel="")
-    check_plot(p)
+    @check_plot p
 
     # gives warning if no title
     plot!(p, ylabel="ylabel", title="")
-    check_plot(p)
+    @check_plot p
     plot!(p; title="title")
-    @test_nowarn check_plot(p)
+    @check_plot p
 
     # line colors must be unique
     p = plot([1, 2, 3], [4, 3, 2]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue)
     plot!([1, 2, 3], [3, 2, 1]; color=:blue)
-    check_plot(p)
+    @check_plot p
 
     # marker colors must be unique
     p = scatter([1, 2, 3], [4, 3, 2]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue)
     scatter!([1, 2, 3], [3, 2, 1]; color=:blue)
-    check_plot(p)
+    @check_plot p
 
     # series line and marker colors should match
     p = plot([1, 2, 3], [4, 3, 2]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue, markershape=:o, markercolor=:red)
-    check_plot(p)
+    @check_plot p
 end
 
 @testset "compare_plots single series" begin
@@ -96,7 +96,7 @@ end
     # subplot titles should match
     submission = plot([1, 2, 3], [3, 2, 1]; xlabel="xlabel", ylabel="ylabel", title="wrong", color=:blue, label="Series 1")
 
-    # @test_logs (:warn, "Subplot 1 title does not match reference.")
+    # @test_logs (:warn, "Subplot 1 title does not match expected title 'title'.")
     compare_plots(submission, reference)
 
     # subplot axis labels should match
@@ -118,8 +118,8 @@ end
 end
 
 @testset "compare_plots multiple series" begin
-    submission = include("./reference_plot.jl")
-    @test_nowarn compare_plots(submission, "./reference_plot.jl")
+    submission = include("./plot/multiple_subplots/plotscript.jl")
+    @test_nowarn compare_plots(submission, "./plot/multiple_subplots/plotscript.jl")
 
     # reference with two series
     reference = plot([1, 2, 3], [3, 2, 1]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue, label="Series 1")
@@ -158,6 +158,18 @@ end
     submission = plot([1, 2, 3], [3, 2, 1]; xlabel="xlabel", ylabel="ylabel", title="title", color=:green, label="Series 1")
     plot!([1, 2, 3], [4, 3, 2], color=:red, label="Series 2", marker=:o)
 
-    # @test_logs (:warn, "Line color for series 'Series 1' does not match reference.")
     compare_plots(submission, reference)
+end
+
+@testset "@check_plot" begin
+    area_perimeter_vs_radius = generate_reference(joinpath("./plot", "area_perimeter_vs_radius", "plotscript.jl"))
+    @check_plot area_perimeter_vs_radius @__DIR__
+
+    "/home/jk/.julia/dev/PlotCheck/test/plot"
+
+    heatmap_test = generate_reference(joinpath("./plot", "heatmap_test", "plotscript.jl"))
+    @check_plot heatmap_test "/home/jk/.julia/dev/PlotCheck/test/plot"
+
+    three_dimension_test = generate_reference(joinpath("./plot", "three_dimension_test", "plotscript.jl"))
+    @check_plot three_dimension_test "/home/jk/.julia/dev/PlotCheck/test/plot"
 end

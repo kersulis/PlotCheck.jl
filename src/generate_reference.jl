@@ -1,5 +1,6 @@
 export generate_reference, generate_references
 
+
 """
     reference = generate_reference(reference_script_path[, img_path])
 
@@ -26,26 +27,26 @@ function generate_reference(script_path::String, img_path::String="")
     return reference
 end
 
+
 """
-    generate_references(plot_folder[, img_ext])
+    generate_references(dir[, script_name, img_ext])
 
-Assume plot_folder has a subdirectory for each plot
-    we wish to create a reference for. Each such subdirectory is presumed
-    to contain a single `.jl` file, which returns the desired reference
-    plot upon `include()`. The reference plot is saved with the indicated
-    extension, and named after the subdirectory.
+Search through `dir` for all subdirectories that contain a file
+    called `script_name`. For each of these subdirectories, the script
+    file is run (via `include) to generate a reference plot. The
+    reference plot is then saved as an image file with the indicated
+    extension, and stored in the same subdirectory as the script.
 """
-function generate_references(plot_folder::String, img_ext::String=".png")
-    folders = filter(x -> x[1] != '.', readdir(plot_folder))
-    for folder in folders
-        println(joinpath(plot_folder, folder))
-        files = readdir(joinpath(plot_folder, folder))
-
-        script_name = filter(x -> split(x, ".") |> last == "jl", files) |> first
-        script_path = joinpath(plot_folder, folder, script_name)
-
-        img_name = basename(folder)
-        img_path = joinpath(plot_folder, folder, img_name) * img_ext
+function generate_references(
+    dir::String,
+    script_name::String="plotscript.jl",
+    img_ext::String=".png"
+    )
+    script_paths = file_search(dir, script_name)
+    for script_path in script_paths
+        img_folder = dirname(script_path)
+        img_name = img_folder |> basename
+        img_path = joinpath(img_folder, img_name) * img_ext
 
         generate_reference(script_path, img_path)
     end

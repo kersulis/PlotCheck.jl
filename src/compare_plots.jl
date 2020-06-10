@@ -160,15 +160,28 @@ function compare_data(submission::Plots.Series, reference::Plots.Series, pct_dif
     return
 end
 
-macro check_plot(plot, plot_dir="./plot")
+"""
+Recursively search `dir` for a subdirectory with the same name as
+    `plot`
+"""
+macro check_plot(plot, dir="./plot")
     plot_name = string(:($(plot)))
-    script_path = joinpath(plot_dir, plot_name, "script.jl")
+    script_folder = folder_search(dir, plot_name)
 
-    if isfile(script_path)
-        info(_LOGGER, "Comparing to reference plot.")
-        return :(compare_plots($(esc(plot)), $(script_path)))
-    else
+    if isnothing(script_folder)
         info(_LOGGER, "No reference plot found; basic checks only.")
         return :(check_plot_basics($(esc(plot))))
     end
+
+    jl_files = filter(f -> f[(end - 2):end] == ".jl", readdir(script_folder))
+    
+    if length(jl_files) == 0
+        error(_LOGGER, "Plot script missing in $(script_folder)")
+    elseif length(jl_files) > 1
+        error(_LOGGER, "Multiple .jl files found in $(script_folder)")
+    end
+
+    script_path = joinpath(script_folder, jl_files |> first)
+    info(_LOGGER, "Comparing to reference plot.")
+    return :(compare_plots($(esc(plot)), $(script_path)))
 end

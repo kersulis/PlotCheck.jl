@@ -11,7 +11,9 @@ __init__() = Memento.register(_LOGGER)
 
 include("access_features.jl")
 include("check_features.jl")
-include("compare_plots.jl")
+
+include("filesystem_utils.jl")
 include("generate_reference.jl")
+include("compare_plots.jl")
 
 end # module

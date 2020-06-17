@@ -1,5 +1,6 @@
 export compare_plots, @check_plot
 
+
 """
     compare_plots(submission, reference)
 
@@ -17,18 +18,25 @@ Additionally, generate warnings if any of the following are true:
 function compare_plots(submission::Plots.Plot, reference::Plots.Plot)
     sub_subplots = submission |> get_subplots
     ref_subplots = reference |> get_subplots
+    n_sub, n_ref = length(sub_subplots), length(ref_subplots)
 
-        # compare number of subplots
-        if length(sub_subplots) != length(ref_subplots)
-            warn(_LOGGER, "Incorrect number of subplots.")
-        end
+    # compare number of subplots
+    if n_sub != n_ref
+        return "Expected $(n_ref) subplots but found $(n_sub)."
+    end
 
-        # compare subplots pairwise
-        for (idx, (sub_subplot, ref_subplot)) in enumerate(zip(sub_subplots, ref_subplots))
-            compare_subplots(sub_subplot, ref_subplot, string(idx))
-        end
-    return
+    # compare subplots pairwise
+    reports = Vector{Dict{Symbol, Any}}()
+    for (idx, (sub_subplot, ref_subplot)) in enumerate(zip(sub_subplots, ref_subplots))
+        subplot_name = "Subplot $(idx)"
+        report = compare_subplots(sub_subplot, ref_subplot)
+        report[:subplot_name] = subplot_name
+        push!(reports, report)
+    end
+
+    return print_reports(reports, true)
 end
+
 
 """
     compare_plots(submission, reference_script_path)
@@ -38,111 +46,135 @@ compare `submission` and `reference`.
 """
 function compare_plots(submission::Plots.Plot, reference_script_path::String)
     reference = include(reference_script_path)
-    compare_plots(submission, reference)
-    return
+
+    return compare_plots(submission, reference)
 end
 
-function compare_subplots(submission::Plots.Subplot, reference::Plots.Subplot, idx::String="")
+
+function compare_subplots(submission::Plots.Subplot, reference::Plots.Subplot)
+    report = Dict{Symbol, Any}()
+
     # compare titles and axis labels
-    if get_title(submission) != get_title(reference)
-        warn(_LOGGER, "Subplot $idx title does not match expected title '$(get_title(reference))'.")
+    sub_title, ref_title = get_title(submission), get_title(reference)
+    if sub_title != ref_title
+        report[:title] = "'$(sub_title)' does not match expected title '$(ref_title)'."
     end
 
-    if get_xlabel(submission) != get_xlabel(reference)
-        warn(_LOGGER, "Subplot $idx xlabel does not match expected xlabel '$(get_xlabel(reference))'.")
+    sub_xlabel, ref_xlabel = get_xlabel(submission), get_xlabel(reference)
+    if sub_xlabel != ref_xlabel
+        report[:xlabel] = "'$(sub_xlabel)' does not match expected xlabel '$(ref_xlabel)'."
     end
 
-    if get_ylabel(submission) != get_ylabel(reference)
-        warn(_LOGGER, "Subplot $idx ylabel does not match expected ylabel '$(get_ylabel(reference))'.")
+    sub_ylabel, ref_ylabel = get_ylabel(submission), get_ylabel(reference)
+    if sub_ylabel != ref_ylabel
+        report[:ylabel] = "'$(sub_ylabel)' does not match expected ylabel '$(ref_ylabel)'."
     end
 
     # compare series (by label, if multiple series)
+    report[:series] = Dict{String, Any}()
+
     if reference |> get_series_list |> length == 1 # one series; no need to check label matching
         sub_series, ref_series = get_series(submission), get_series(reference)
-        compare_series(sub_series, ref_series; force_label_match=false)
+        series_label = ref_series |> get_label
+        report[:series][series_label] = compare_series(sub_series, ref_series)
     else
         sub_series_list = get_series_list(submission)
         sub_series_labels = [get_label(series) for series in sub_series_list]
         for ref_series in get_series_list(reference)
             ref_label = ref_series |> get_label
+
             if !(ref_label in sub_series_labels)
-                warn(_LOGGER, "Expected series with label '$(ref_label)'; please add this series.")
+                report[:series][ref_label] = missing
                 continue
             end
+
             sub_series_ind = findfirst(sub_series_labels .== ref_label)
             sub_series = sub_series_list[sub_series_ind]
-            compare_series(sub_series, ref_series)
+            report[:series][ref_label] = compare_series(sub_series, ref_series)
         end
     end
-    return
+
+    return report
 end
 
-function compare_series(submission::Plots.Series, reference::Plots.Series; force_label_match=true)
+
+function compare_series(submission::Plots.Series, reference::Plots.Series)
+    report = Dict{Symbol, Dict}()
+
     sub_label, ref_label = get_label(submission), get_label(reference)
     if sub_label != ref_label
-        if force_label_match
-            warn(_LOGGER, "Label for series '$(sub_label)' does not match reference label '$(ref_label)'.")
-        else
-            info(_LOGGER, "Label for series '$(sub_label)' does not match expected label '$(ref_label)'.")
-        end
+        report[:label] = "'$(sub_label)' does not match expected label '$(ref_label)'."
     end
 
-    compare_paths(submission, reference)
-    compare_markers(submission, reference)
-    compare_data(submission, reference)
+    report[:paths] = compare_paths(submission, reference)
+    report[:markers] = compare_markers(submission, reference)
+    report[:data] = compare_data(submission, reference)
+
+    return report
 end
+
 
 "Check for presence of visible paths (connecting line segments between points)"
 function compare_paths(submission::Plots.Series, reference::Plots.Series)
+    report = Dict{Symbol, String}()
+
     sub_label = submission |> get_label
     submission_has_path, reference_has_path = has_path(submission), has_path(reference)
 
     if submission_has_path & !reference_has_path
-        warn(_LOGGER, "Series '$(sub_label)' should not have line segments connecting points.")
+        report[:path] = "Series should not have line segments connecting points."
     elseif !submission_has_path & reference_has_path
-        warn(_LOGGER, "Series '$(sub_label)' should have line segments connecting points.")
+        report[:path] =  "Series should have line segments connecting points."
     end
 
     color_sub, color_ref = get_linecolor(submission), get_linecolor(reference)
 
     # do not compare all 256 colors of a gradient
     # (handles the heatmap case)
-    if typeof(color_ref) <: PlotUtils.ColorGradient
-        return
-    end
+    (typeof(color_ref) <: PlotUtils.ColorGradient) && return report
 
     if color_sub != color_ref
-        warn(_LOGGER, "Line color for series '$(sub_label)' does not match reference.")
+        report[:color] = "Line color does not match reference."
     end
+
+    return report
 end
+
 
 "Check for presence of visible point markers"
 function compare_markers(submission::Plots.Series, reference::Plots.Series)
+    report = Dict{Symbol, String}()
+
     sub_label = submission |> get_label
     submission_has_marker, reference_has_marker = has_marker(submission), has_marker(reference)
 
     # check for missing or extraneous markers
     if submission_has_marker && !reference_has_marker
-        warn(_LOGGER, "Series '$(sub_label)' should not have markers indicating individual points.")
+        report[:marker] = "Series should not have markers indicating individual points."
     elseif !submission_has_marker && reference_has_marker
-        warn(_LOGGER, "Series '$(sub_label)' should have markers indicating individual points.")
+        report[:marker] = "Series should have markers indicating individual points."
 
     # if both have markers, see if colors and shapes align
     elseif submission_has_marker && reference_has_marker
         sub_markershape, ref_markershape = get_markershape(submission), get_markershape(reference)
         if sub_markershape != ref_markershape
-            warn(_LOGGER, "Marker shape for series '$(sub_label)' does not match expected shape :$(ref_markershape).")
+            report[:markershape] = "Marker shape does not match expected shape :$(ref_markershape)."
         end
 
         sub_markercolor, ref_markercolor = get_markercolor(submission), get_markercolor(reference)
         if sub_markercolor != ref_markercolor
-            warn(_LOGGER, "Marker color for series '$(sub_label)' does not match reference color.")
+            report[:markercolor] = "Marker color does not match reference color."
         end
     end
+
+    return report
 end
 
-"Check whether submission series data matches reference series data up to an elementwise percent difference."
+
+"Check whether submission series data matches reference series data up to elementwise percent difference."
 function compare_data(submission::Plots.Series, reference::Plots.Series, pct_diff_tol::Number=5.0)
+    report = Dict{Symbol, String}()
+
     pct_diff(sub, ref) = 100 * abs((sub - ref) / ref)
     sub_label = get_label(submission)
 
@@ -150,20 +182,19 @@ function compare_data(submission::Plots.Series, reference::Plots.Series, pct_dif
 
     # if number of points does not match, we're done
     if length(xsub) != length(xref)
-        info(_LOGGER, "Series '$(sub_label)' does not have the same number of points as reference.")
-        return
-    end
+        report[:xdata] = "Series should have $(length(xref)) data points."
+        return report
 
     # if x-axis values do not line up, no point in checking y-axis values
-    if maximum(pct_diff.(xsub, xref)) > pct_diff_tol
-        info(_LOGGER, "x-axis values for series '$(sub_label)' do not match reference.")
-        return
+    elseif maximum(pct_diff.(xsub, xref)) > pct_diff_tol
+        report[:xdata] = "x-axis values do not match reference."
+        return report
     end
 
     # if x-axis values do line up, y-axis values should line up also
     ysub, yref = get_ydata(submission), get_ydata(reference)
     if maximum(pct_diff.(ysub, yref)) > pct_diff_tol
-        info(_LOGGER, "y-axis values for series '$(sub_label)' do not match reference.")
+        report[:ydata] = "y-axis values do not match reference."
     end
 
     # if there is z data, check that also
@@ -171,13 +202,14 @@ function compare_data(submission::Plots.Series, reference::Plots.Series, pct_dif
         zsub, zref = get_zdata(submission), get_zdata(reference)
         if get_seriestype(reference) == :heatmap
             if maximum(pct_diff.(zsub.surf, zref.surf)) > pct_diff_tol
-                info(_LOGGER, "Heatmap z-data for series '$(sub_label)' does not match reference.")
+                report[:zdata] = "Heatmap z-data does not match reference."
             end
         elseif maximum(pct_diff.(zsub, zref)) > pct_diff_tol
-            info(_LOGGER, "z-axis values for series '$(sub_label)' do not match reference.")
+            report[:zdata] = "z-axis values do not match reference."
         end
     end
-    return
+
+    return report
 end
 
 
@@ -187,28 +219,25 @@ Recursively search `dir` for a subdirectory with the same name as
 """
 macro check_plot(plot, dir="./plot")
     plot_name = string(:($(plot)))
-    
+
     if !isdir(:($(dir)))
-        info(_LOGGER, "No reference directory found; basic checks only.")
         return :(check_plot_basics($(esc(plot))))
     end
 
     script_folder = folder_search(:($(dir)), plot_name)
 
     if isnothing(script_folder)
-        info(_LOGGER, "No reference plot found; basic checks only.")
         return :(check_plot_basics($(esc(plot))))
     end
 
     jl_files = filter(f -> f[(end - 2):end] == ".jl", readdir(script_folder))
 
     if length(jl_files) == 0
-        error(_LOGGER, "Plot script missing in $(script_folder)")
+        @error "Plot script missing in $(script_folder)."
     elseif length(jl_files) > 1
-        error(_LOGGER, "Multiple .jl files found in $(script_folder)")
+        @error "Multiple .jl files found in $(script_folder)."
     end
 
     script_path = joinpath(script_folder, jl_files |> first)
-    info(_LOGGER, "Comparing to reference plot.")
     return :(compare_plots($(esc(plot)), $(script_path)))
 end

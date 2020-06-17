@@ -4,7 +4,7 @@ get_subplots(plot::Plots.Plot) = plot.subplots
 function get_subplot(plot::Plots.Plot)
     subplots = get_subplots(plot)
     if length(subplots) > 1
-         error(_LOGGER, "Plot has multiple subplots.")
+         @error "Plot has multiple subplots."
      end
     return subplots |> first
 end
@@ -26,7 +26,7 @@ get_series_list(plot::Plots.Plot) = plot |> get_subplot |> get_series_list
 function get_series(subplot::Plots.Subplot)
     series = get_series_list(subplot)
     if length(series) > 1
-        error(_LOGGER, "Subplot has multiple series.")
+        @error "Subplot has multiple series."
     end
     return series |> first
 end

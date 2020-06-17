@@ -171,3 +171,10 @@ end
     three_dimension_test = generate_reference(joinpath("./plot", "three_dimension_test", "plotscript.jl"))
     @check_plot three_dimension_test "/home/jk/.julia/dev/PlotCheck/test/plot"
 end
+
+@check_plot submission
+
+## _
+compare_plots(submission, reference)
+
+reference

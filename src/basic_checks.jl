@@ -1,5 +1,6 @@
 export check_plot_basics
 
+
 # subplot-level checks
 "Return `true` if subplot has a title."
 has_title(subplot::Plots.Subplot) = get_title(subplot) != ""
@@ -26,10 +27,12 @@ has_ylabel(subplot::Plots.Subplot) = get_ylabel(subplot) != ""
 "Return `true` if series is labeled."
 has_label(series::Plots.Series) = get_label(series) != ""
 
+
 "Return `true` if series has visible line segments between points."
 function has_path(series::Plots.Series)
     return get_linewidth(series) > 0 && get_linecolor(series) != :white
 end
+
 
 "Return `true` if series has visible point markers."
 function has_marker(series::Plots.Series)
@@ -39,6 +42,7 @@ function has_marker(series::Plots.Series)
         get_markercolor(series) != :white
     ))
 end
+
 
 # retrieving sets of series from a subplot
 "Return all subplot series with visible line segments connecting their points."
@@ -60,37 +64,35 @@ all_series_labeled(subplot::Plots.Subplot) = all((has_label(s) for s in get_seri
 "Return `true` if all elements of collection `x` are unique"
 all_unique(x) = length(unique(x)) == length(x)
 
+
 "Return `true` if line and marker colors match for all series that have both"
 function path_matches_marker(subplot::Plots.Subplot)
     return all((get_markercolor(s) == get_linecolor(s) for s in series_path_marker(subplot)))
 end
+
 
 "Return `true` if all line colors in a subplot are unique."
 function line_colors_unique(subplot::Plots.Subplot)
     return all_unique((get_linecolor(s) for s in series_path(subplot)))
 end
 
+
 "Return `true` if all marker colors in a subplot are unique."
 function marker_colors_unique(subplot::Plots.Subplot)
     return all_unique((get_markercolor(s) for s in series_marker(subplot)))
 end
 
-function check_axis_labels(subplot::Plots.Subplot)
-    if !has_xlabel(subplot)
-        warn(_LOGGER, "The horizontal axis is missing a label.")
-    end
-    if !has_ylabel(subplot)
-        warn(_LOGGER, "The vertical axis is missing a label.")
-    end
-    return
-end
 
 function check_subplot_title(subplot::Plots.Subplot)
-    if !has_title(subplot)
-        warn(_LOGGER, "Subplot is missing a title.")
-    end
-    return
+    !has_title(subplot) && return "Subplot is missing a title."
 end
+
+
+function check_axis_labels(subplot::Plots.Subplot)
+    !has_xlabel(subplot) && return "The horizontal axis is missing a label."
+    !has_ylabel(subplot) && return "The vertical axis is missing a label."
+end
+
 
 """
 Display warning messages in the following cases:
@@ -99,17 +101,11 @@ Display warning messages in the following cases:
 - at least one series has both visible lines and markers, but their colors *do not* match
 """
 function check_color_uniqueness(subplot::Plots.Subplot)
-    if !path_matches_marker(subplot)
-        warn(_LOGGER, "Series marker and line colors should match.")
-    end
-    if !line_colors_unique(subplot)
-        warn(_LOGGER, "Line colors should be unique.")
-    end
-    if !marker_colors_unique(subplot)
-        warn(_LOGGER, "Marker colors should be unique.")
-    end
-    return
+    !path_matches_marker(subplot) && return "Series marker and line colors should match."
+    !line_colors_unique(subplot) && return "Line colors should be unique."
+    !marker_colors_unique(subplot) && return "Marker colors should be unique."
 end
+
 
 """
     check_subplot(plot)
@@ -120,11 +116,15 @@ Check the following:
 - Series colors are unique
 """
 function check_subplot(subplot::Plots.Subplot)
-    check_subplot_title(subplot)
-    check_axis_labels(subplot)
-    check_color_uniqueness(subplot)
-    return
+    report = Dict{Symbol, Any}()
+
+    report[:title] = check_subplot_title(subplot)
+    report[:axis_labels] = check_axis_labels(subplot)
+    report[:color_uniqueness] = check_color_uniqueness(subplot)
+
+    return report
 end
+
 
 """
     check_plot_basics(plot)
@@ -135,8 +135,14 @@ Check the following for each subplot in `plot`:
 - Series colors are unique
 """
 function check_plot_basics(plot::Plots.Plot)
-    for subplot in get_subplots(plot)
-        check_subplot(subplot)
+    reports = Vector{Dict{Symbol, Any}}()
+    for (idx, subplot) in plot |> get_subplots |> enumerate
+        subplot_name = "Subplot $(idx)"
+        report = check_subplot(subplot)
+        report[:subplot_name] = subplot_name
+        push!(reports, report)
     end
+
+    print_reports(reports)
     return
 end

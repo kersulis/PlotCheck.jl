@@ -23,7 +23,7 @@ function generate_reference(script_path::String, img_path::String="")
 
     if !isempty(img_path)
         savefig(reference, img_path)
-        info(_LOGGER, "$(img_path) generated from $(script_path).")
+        @info "$(img_path) generated from $(script_path)."
     end
     return reference
 end

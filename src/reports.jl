@@ -5,8 +5,8 @@ Recursively search through dictionary `d` for values which are strings.
     Values which are `Dict`s are searched, and their string values are
     appended as well.
 """
-function collect_string_values(d::Dict, string_values::Vector{String}=String[])
-    for v in values(d)
+function collect_string_values(d::Dict, string_values::Vector{String}=String[]; skip_keys::Vector=[])
+    for v in [(!(k in skip_keys) ? v : nothing) for (k, v) in d]
         if v isa String
             push!(string_values, v)
         elseif v isa Dict
@@ -60,7 +60,12 @@ function format_report(report::Dict{Symbol, Any}, reference_available::Bool=fals
         end
         return "---\n" * report_title * join(series_strings) * "---\n"
     else
-        messages = collect_string_values(report)
-        return "---\n" * report_title * join(messages) * "---\n"
+        messages = collect_string_values(report; skip_keys=[:subplot_name])
+        if isempty(messages)
+            subplot_string = "Checked.\n\n"
+        else
+            subplot_string = ["- $(s)\n" for s in messages] |> join
+        end
+        return "---\n" * report_title * subplot_string * "---\n\n"
     end
 end

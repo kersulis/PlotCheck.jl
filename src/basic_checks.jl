@@ -84,13 +84,19 @@ end
 
 
 function check_subplot_title(subplot::Plots.Subplot)
-    !has_title(subplot) && return "Subplot is missing a title."
+    report = Dict{Symbol, String}()
+    !has_title(subplot) && (report[:subplot_title] = "Subplot is missing a title.")
+
+    return report
 end
 
 
 function check_axis_labels(subplot::Plots.Subplot)
-    !has_xlabel(subplot) && return "The horizontal axis is missing a label."
-    !has_ylabel(subplot) && return "The vertical axis is missing a label."
+    report = Dict{Symbol, String}()
+    !has_xlabel(subplot) && (report[:xlabel] = "The horizontal axis is missing a label.")
+    !has_ylabel(subplot) && (report[:ylabel] = "The vertical axis is missing a label.")
+
+    return report
 end
 
 
@@ -101,9 +107,12 @@ Display warning messages in the following cases:
 - at least one series has both visible lines and markers, but their colors *do not* match
 """
 function check_color_uniqueness(subplot::Plots.Subplot)
-    !path_matches_marker(subplot) && return "Series marker and line colors should match."
-    !line_colors_unique(subplot) && return "Line colors should be unique."
-    !marker_colors_unique(subplot) && return "Marker colors should be unique."
+    report = Dict{Symbol, String}()
+    !path_matches_marker(subplot) && (report[:path_matches_marker] = "Series marker and line colors should match.")
+    !line_colors_unique(subplot) && (report[:line_colors_unique] = "Line colors should be unique.")
+    !marker_colors_unique(subplot) && (report[:marker_colors_unique] = "Marker colors should be unique.")
+
+    return report
 end
 
 
@@ -143,6 +152,5 @@ function check_plot_basics(plot::Plots.Plot)
         push!(reports, report)
     end
 
-    print_reports(reports)
-    return
+    return print_reports(reports, false)
 end

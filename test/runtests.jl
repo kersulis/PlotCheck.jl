@@ -60,7 +60,14 @@ end
 
 @testset "check_plot" begin
     # plot check works if axes are labeled and there is a title
-    p = plot([1, 2, 3], [4, 3, 2]; xlabel="xlabel", ylabel="ylabel", title="title", color=:blue)
+    p = plot(
+        [1, 2, 3], [4, 3, 2];
+        xlabel="xlabel",
+        ylabel="ylabel",
+        title="title",
+        color=:blue,
+        label="Series 1"
+    )
     @check_plot p
 
     # fails if no xlabel or ylabel

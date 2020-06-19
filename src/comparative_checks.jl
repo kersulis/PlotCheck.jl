@@ -99,7 +99,7 @@ end
 
 
 function compare_series(submission::Plots.Series, reference::Plots.Series)
-    report = Dict{Symbol, Dict}()
+    report = Dict{Symbol, Any}()
 
     sub_label, ref_label = get_label(submission), get_label(reference)
     if sub_label != ref_label

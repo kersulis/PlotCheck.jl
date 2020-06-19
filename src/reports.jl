@@ -20,16 +20,17 @@ end
 function print_reports(reports::Vector{Dict{Symbol, Any}}, reference_available::Bool=false)
     title = "PlotCheck Report\n---\n"
     if reference_available
-        postscript = "*(Checked against reference plot.)*\n"
+        postscript = "Checked against reference plot.\n"
     else
-        postscript = "*(No reference; basic checks only.)*\n"
+        postscript = "No reference; basic checks only.\n"
     end
 
     subplot_reports = (format_report(r, reference_available) for r in reports)
 
-    formatted_report = title * join(subplot_reports) * postscript |> Markdown.parse
+    formatted_report = title * join(subplot_reports) |> Markdown.parse
     display(formatted_report)
-    return formatted_report
+    println(postscript)
+    return
 end
 
 

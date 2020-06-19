@@ -49,7 +49,7 @@ function format_report(report::Dict{Symbol, Any}, reference_available::Bool=fals
                 if isempty(series_messages)
                     series_string = "Series '$(series_name)': Checked.\n\n"
                 else
-                    series_string = "Series '$(series_name)': Issues found.\n\n"
+                    series_string = "Series '$(series_name)': Found the following issues.\n"
 
                     # markdown list format
                     series_messages = ["- $(s)\n" for s in series_messages]

@@ -179,9 +179,13 @@ end
     @check_plot three_dimension_test "/home/jk/.julia/dev/PlotCheck/test/plot"
 end
 
-@check_plot submission
-
 ## _
-compare_plots(submission, reference)
 
-reference
+p = include("./plot/multiple_subplots/plotscript.jl")
+plot_dict = PlotCheck.jld2plot("tmp.jld")
+
+
+sp = PlotCheck.get_subplots(p)[1]
+subplot_dict = PlotCheck.get_subplots(plot_dict)[1]
+
+PlotCheck.check_plot_basics(plot_dict)

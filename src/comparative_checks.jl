@@ -15,7 +15,7 @@ Additionally, generate warnings if any of the following are true:
 - if number of values matches, there is a mismatch in x-axis values, or
 - if x-axis values match, there is a mismatch in y-axis values.
 """
-function compare_plots(submission::Plots.Plot, reference::Plots.Plot)
+function compare_plots(submission::PlotData, reference::PlotData)
     sub_subplots = submission |> get_subplots
     ref_subplots = reference |> get_subplots
     n_sub, n_ref = length(sub_subplots), length(ref_subplots)
@@ -44,14 +44,14 @@ end
 Assuming `include(reference_script_path)` returns the desired reference plot `reference`,
 compare `submission` and `reference`.
 """
-function compare_plots(submission::Plots.Plot, reference_script_path::String)
+function compare_plots(submission::PlotData, reference_script_path::String)
     reference = include(reference_script_path)
 
     return compare_plots(submission, reference)
 end
 
 
-function compare_subplots(submission::Plots.Subplot, reference::Plots.Subplot)
+function compare_subplots(submission::SubplotData, reference::SubplotData)
     report = Dict{Symbol, Any}()
 
     # compare titles and axis labels
@@ -98,7 +98,7 @@ function compare_subplots(submission::Plots.Subplot, reference::Plots.Subplot)
 end
 
 
-function compare_series(submission::Plots.Series, reference::Plots.Series)
+function compare_series(submission::SeriesData, reference::SeriesData)
     report = Dict{Symbol, Any}()
 
     sub_label, ref_label = get_label(submission), get_label(reference)
@@ -115,7 +115,7 @@ end
 
 
 "Check for presence of visible paths (connecting line segments between points)"
-function compare_paths(submission::Plots.Series, reference::Plots.Series)
+function compare_paths(submission::SeriesData, reference::SeriesData)
     report = Dict{Symbol, String}()
 
     sub_label = submission |> get_label
@@ -142,7 +142,7 @@ end
 
 
 "Check for presence of visible point markers"
-function compare_markers(submission::Plots.Series, reference::Plots.Series)
+function compare_markers(submission::SeriesData, reference::SeriesData)
     report = Dict{Symbol, String}()
 
     sub_label = submission |> get_label
@@ -172,7 +172,7 @@ end
 
 
 "Check whether submission series data matches reference series data up to elementwise percent difference."
-function compare_data(submission::Plots.Series, reference::Plots.Series, pct_diff_tol::Number=5.0)
+function compare_data(submission::SeriesData, reference::SeriesData, pct_diff_tol::Number=5.0)
     report = Dict{Symbol, String}()
 
     pct_diff(sub, ref) = 100 * abs((sub - ref) / ref)

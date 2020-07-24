@@ -1,20 +1,20 @@
-using JLD
+using FileIO
 
-export generate_reference, generate_references
+export plotscript2img, plotdir2img, plotscript2disk
 
 
 """
-    reference = generate_reference(reference_script_path[, img_path])
+    reference = plotscript2img(script_path[, img_path])
 
-Assuming `include(reference_script_path)` returns the desired
-    reference plot `reference`, change the plot's appearance
+Assuming `include(script_path)` returns the desired
+    reference plot, change the plot's appearance
     to distinguish it from submissions (so one cannot simply
     turn in the reference plot as one's own).
 
 If optional `img_path` (with appropriate extension) is provided,
     save an image of the reference plot at that location.
 """
-function generate_reference(script_path::String, img_path::String="")
+function plotscript2img(script_path::String, img_path::String="")
     reference = include(script_path)
     plot!(
         reference;
@@ -32,7 +32,7 @@ end
 
 
 """
-    generate_references(dir[, script_name, img_ext])
+    plotscript2img(dir[, script_name, img_ext])
 
 Search through `dir` for all subdirectories that contain a file
     called `script_name`. For each of these subdirectories, the script
@@ -40,7 +40,7 @@ Search through `dir` for all subdirectories that contain a file
     reference plot is then saved as an image file with the indicated
     extension, and stored in the same subdirectory as the script.
 """
-function generate_references(
+function plotdir2img(
     dir::String,
     script_name::String="plotscript.jl",
     img_ext::String=".png"
@@ -51,9 +51,10 @@ function generate_references(
         img_name = img_folder |> basename
         img_path = joinpath(img_folder, img_name) * img_ext
 
-        generate_reference(script_path, img_path)
+        plotscript2img(script_path, img_path)
     end
 end
+
 
 function series2dict(series::Plots.Series)
     return SeriesDict(
@@ -71,6 +72,7 @@ function series2dict(series::Plots.Series)
         )
     )
 end
+
 
 function subplot2dict(subplot::Plots.Subplot)
     series_list = PlotCheck.get_series_list(subplot)
@@ -99,11 +101,14 @@ function plot2dict(plot::Plots.Plot)
 end
 
 
-function plot2jld(plot::Plots.Plot, path::String)
-    plot_dict = plot2dict(plot)
-
-    JLD.save(path, "PlotDict", plot_dict)
+function plot2disk(plot::Plots.Plot, path::String)
+    save(path, "PlotDict", plot2dict(plot))
 end
 
+disk2plotdata(path::String) = load(path)["PlotDict"]
 
-jld2plot(path::String) = JLD.load(path)["PlotDict"]
+
+function plotscript2disk(script_path::String, disk_path::String)
+    p = include(script_path)
+    plot2disk(p, disk_path)
+end

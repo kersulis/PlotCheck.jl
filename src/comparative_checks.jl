@@ -39,13 +39,22 @@ end
 
 
 """
-    compare_plots(submission, reference_script_path)
+    compare_plots(submission, path)
 
-Assuming `include(reference_script_path)` returns the desired reference plot `reference`,
-compare `submission` and `reference`.
+If `path` points to a .jl file, compare `submission` to the
+    result of `include(path)`. If `path` points to a .jld file,
+    compare `submission` to the `PlotDict` contained in the file.
 """
-function compare_plots(submission::PlotData, reference_script_path::String)
-    reference = include(reference_script_path)
+function compare_plots(submission::PlotData, path::String; disk_ext::String="jld2")
+    ext = split(path, ".") |> last
+
+    if ext == "jl"
+        reference = include(path)
+    elseif ext == disk_ext
+        reference = disk2plotdata(path)
+    else
+        @error "$path is not a jl or $(disk_ext) file."
+    end
 
     return compare_plots(submission, reference)
 end
@@ -217,27 +226,20 @@ end
 Recursively search `dir` for a subdirectory with the same name as
     `plot`
 """
-macro check_plot(plot, dir="./plot")
+macro check_plot(plot, dir="./.codex/plotcheck", disk_ext::String="jld2")
     plot_name = string(:($(plot)))
 
     if !isdir(:($(dir)))
         return :(check_plot_basics($(esc(plot))))
     end
 
-    script_folder = folder_search(:($(dir)), plot_name)
+    plotdata_name = plot_name * "." * disk_ext
+    disk_files = filter(f -> last(split(f, ".")) == disk_ext, readdir(:($(dir))))
 
-    if isnothing(script_folder)
+    if !(plotdata_name in disk_files)
         return :(check_plot_basics($(esc(plot))))
     end
 
-    jl_files = filter(f -> f[(end - 2):end] == ".jl", readdir(script_folder))
-
-    if length(jl_files) == 0
-        @error "Plot script missing in $(script_folder)."
-    elseif length(jl_files) > 1
-        @error "Multiple .jl files found in $(script_folder)."
-    end
-
-    script_path = joinpath(script_folder, jl_files |> first)
-    return :(compare_plots($(esc(plot)), $(script_path)))
+    plotdata_path = joinpath(dir, plotdata_name)
+    return :(compare_plots($(esc(plot)), $(plotdata_path)))
 end

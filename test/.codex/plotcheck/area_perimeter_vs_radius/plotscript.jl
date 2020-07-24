@@ -1,6 +1,6 @@
-using Plots, JLD
+using Plots, FileIO
 
-d = JLD.load(joinpath(@__DIR__, "data.jld"))
+d = load(joinpath(@__DIR__, "data.jld"))
 radius, area, perimeter = d["radius"], d["area"], d["perimeter"]
 
 reference = plot(

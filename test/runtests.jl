@@ -181,11 +181,13 @@ end
 
 ## _
 
-p = include("./plot/multiple_subplots/plotscript.jl")
-plot_dict = PlotCheck.jld2plot("tmp.jld")
+using Plots, PlotCheck
 
+area_perimeter_vs_radius = include("./.codex/plotcheck/area_perimeter_vs_radius/plotscript.jl")
+@check_plot area_perimeter_vs_radius "./test/.codex/plotcheck"
 
-sp = PlotCheck.get_subplots(p)[1]
-subplot_dict = PlotCheck.get_subplots(plot_dict)[1]
+heatmap_test = include("./.codex/plotcheck/heatmap_test/plotscript.jl")
+@check_plot heatmap_test "./test/.codex/plotcheck"
 
-PlotCheck.check_plot_basics(plot_dict)
+multiple_subplots = include("./.codex/plotcheck/multiple_subplots/plotscript.jl")
+@check_plot multiple_subplots "./test/.codex/plotcheck"

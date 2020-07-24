@@ -48,24 +48,48 @@ Instead, we can save a script which generates the reference plot. The `@check_pl
 1. Suppose we have the following directory structure:
 ```
 codex.ipynb
-plot/
-    first_plot
-      script.jl
-      data.jld
-      second_plot
-    script.jl
-      data.jld
-      second_plot.png
+.codex/
+  plotcheck/
+    first_plot/
+      plotscript.jl
+      data.jld2
+    second_plot/
+      plotscript.jl
+      data.jld2
 ```
-  `codex.ipynb` is the codex that the student is working on. In the same folder as that Jupyter notebook, there is a folder called `plot` containing a subdirectory for each reference plot. Each subdirectory must have a `script.jl` file which, when `include`d, generates the reference plot. The script file can pull data from `data.jld` for plotting (`data.jld` can have any name, or be a .csv file, etc.). The only rule is that `include(script.jl)` must return the desired reference plot.
-2. Now suppose the student runs a codex cell with the line `@check_plot first_plot`. The macro will look through `plot` for a subdirectory called `first_plot`. Within that directory, it will look for a `script.jl` file. It will use this file to generate a reference plot, then compare the student's submitted plot to that reference.
-3. To help the student make their plot, we can show them a PNG render of it, but with a dark background so they cannot turn it into their instructor as their own work. To save a reference plot with darkened background as a PNG file, do the following:
-  ```julia
-  generate_reference("./plot/first_plot/script.jl", "./plot/first_plot/first_plot.png")
-  ```
-  This will create a `first_plot.png` image in the same directory as the corresponding `script.jl` file. In the directory structure shown above, note that the `second_plot` subdirectory already has such a PNG file.
+`codex.ipynb` is the codex that the student is working on. In the same folder as that Jupyter notebook, there is a folder called `.codex/plotcheck` containing a subdirectory for each reference plot. Each subdirectory has a `plotscript.jl` file which, when `include`d, generates the reference plot. To reduce the number of folders and files required to represent the two plots, we can store all relevant plot features as follows:
+```julia
+using PlotCheck
+plotscript2disk(".codex/plotcheck/first_plot/plotscript.jl", ".codex/plotcheck/first_plot.jld2")
+plotscript2disk(".codex/plotcheck/second_plot/plotscript.jl", ".codex/plotcheck/second_plot.jld2")
+```
+Now there are two new files in the plotcheck directory:
+```
+codex.ipynb
+.codex/
+  plotcheck/
+    first_plot.jld2
+    second_plot.jld2
+    first_plot/
+      plotscript.jl
+      data.jld2
+    second_plot/
+      plotscript.jl
+      data.jld2
+```
+Now we can check a plot against the reference plots represented by the `jld2` files as follows:
+```julia
+using Plots, PlotCheck
 
-  You can also generate reference images for all reference plots as follows:
-  ```julia
-  generate_references("./plot")
-  ```
+first_plot = plot(...)
+second_plot = plot(...)
+
+@check_plot first_plot
+@check_plot second_plot
+```
+The line `@check_plot first_plot` checks the folder `.codex/plotcheck` for a file called `first_plot.jld2`. It will then compare features of the plot `first_plot` to data extracted from that file.
+2. To help the student make their plot, we can show them a PNG render of it, but with a dark background so they cannot turn it into their instructor as their own work. To save a reference plot with darkened background as a PNG file, do the following:
+```julia
+generate_reference(".codex/plotcheck/first_plot/plotscript.jl", ".codex/plotimg/first_plot.png")
+```
+This will create a `first_plot.png` image file in `.codex/plotimg`.

@@ -196,14 +196,14 @@ function compare_data(submission::SeriesData, reference::SeriesData, pct_diff_to
 
     # if x-axis values do not line up, no point in checking y-axis values
     elseif maximum(pct_diff.(xsub, xref)) > pct_diff_tol
-        report[:xdata] = "x-axis values do not match reference."
+        report[:xdata] = "x-axis values do not match reference. This does not necessarily mean your plot is incorrect; the mismatch may be due to random initialization."
         return report
     end
 
     # if x-axis values do line up, y-axis values should line up also
     ysub, yref = get_ydata(submission), get_ydata(reference)
     if maximum(pct_diff.(ysub, yref)) > pct_diff_tol
-        report[:ydata] = "y-axis values do not match reference."
+        report[:ydata] = "y-axis values do not match reference. This does not necessarily mean your plot is incorrect; the mismatch may be due to random initialization."
     end
 
     # if there is z data, check that also
@@ -211,10 +211,10 @@ function compare_data(submission::SeriesData, reference::SeriesData, pct_diff_to
         zsub, zref = get_zdata(submission), get_zdata(reference)
         if get_seriestype(reference) == :heatmap
             if maximum(pct_diff.(zsub.surf, zref.surf)) > pct_diff_tol
-                report[:zdata] = "Heatmap z-data does not match reference."
+                report[:zdata] = "Heatmap z-data does not match reference. This does not necessarily mean your plot is incorrect; the mismatch may be due to random initialization."
             end
         elseif maximum(pct_diff.(zsub, zref)) > pct_diff_tol
-            report[:zdata] = "z-axis values do not match reference."
+            report[:zdata] = "z-axis values do not match reference. This does not necessarily mean your plot is incorrect; the mismatch may be due to random initialization."
         end
     end
 

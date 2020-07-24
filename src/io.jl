@@ -31,6 +31,20 @@ function plotscript2img(script_path::String, img_path::String="")
 end
 
 
+function plot2img(plot::Plots.Plot, img_path::String)
+    plot!(
+    plot;
+    background_color_outside=:lightgray,
+    background_color_inside=:lightgray,
+    margin=(10.0 * Plots.mm)
+    )
+
+    savefig(plot, img_path)
+    @info "$(img_path) saved."
+    return
+end
+
+
 """
     plotscript2img(dir[, script_name, img_ext])
 

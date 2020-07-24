@@ -1,6 +1,6 @@
 using FileIO
 
-export plotscript2img, plotdir2img, plotscript2disk
+export plotscripts2img, plotscripts2disk
 
 
 """
@@ -35,22 +35,21 @@ end
     plotscript2img(dir[, script_name, img_ext])
 
 Search through `dir` for all subdirectories that contain a file
-    called `script_name`. For each of these subdirectories, the script
-    file is run (via `include) to generate a reference plot. The
-    reference plot is then saved as an image file with the indicated
-    extension, and stored in the same subdirectory as the script.
+    called `script_name`. For each of these subdirectories, the script file is run (via `include) to generate a reference plot.
+    The reference plot is then saved as an image file with the indicated
+    extension, and stored in the specified image directory.
 """
-function plotdir2img(
-    dir::String,
+function plotscripts2img(
+    script_dir::String,
+    img_dir::String,
     script_name::String="plotscript.jl",
-    img_ext::String=".png"
+    img_ext::String="png"
     )
-    script_paths = file_search(dir, script_name)
+    !isdir(img_dir) && mkdir(img_dir)
+    script_paths = file_search(script_dir, script_name)
     for script_path in script_paths
-        img_folder = dirname(script_path)
-        img_name = img_folder |> basename
-        img_path = joinpath(img_folder, img_name) * img_ext
-
+        img_name = dirname(script_path) |> basename
+        img_path = joinpath(img_dir, img_name) * "." * img_ext
         plotscript2img(script_path, img_path)
     end
 end
@@ -111,4 +110,20 @@ disk2plotdata(path::String) = load(path)["PlotDict"]
 function plotscript2disk(script_path::String, disk_path::String)
     p = include(script_path)
     plot2disk(p, disk_path)
+end
+
+
+function plotscripts2disk(
+    script_dir::String,
+    disk_dir::String,
+    script_name::String="plotscript.jl",
+    disk_ext::String="jld2"
+    )
+    !isdir(disk_dir) && mkdir(disk_dir)
+    script_paths = file_search(script_dir, script_name)
+    for script_path in script_paths
+        disk_name = dirname(script_path) |> basename
+        disk_path = joinpath(disk_dir, disk_name) * "." * disk_ext
+        plotscript2disk(script_path, disk_path)
+    end
 end

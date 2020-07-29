@@ -19,10 +19,21 @@ end
 
 function print_reports(reports::Vector{Dict{Symbol, Any}}, reference_available::Bool=false)
     title = "PlotCheck Report\n---\n"
+
+    issues_found = length(reports) > 0
+
     if reference_available
-        postscript = "Checked against reference plot.\n"
+        if issues_found
+            postscript = "Checked against reference plot. Issues found."
+        else
+            postscript = "Checked against reference plot."
+        end
     else
-        postscript = "No reference; basic checks only.\n"
+        if issues_found
+            postscript = "Basic checks performed. Issues found."
+        else
+            postscript = "Basic checks performed."
+        end
     end
 
     subplot_reports = (format_report(r, reference_available) for r in reports)

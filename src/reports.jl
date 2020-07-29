@@ -17,19 +17,25 @@ function collect_string_values(d::Dict, string_values::Vector{String}=String[]; 
 end
 
 
+function no_issues(report)
+    messages = collect_string_values(report; skip_keys=[:subplot_name])
+    return isempty(messages)
+end
+
+
 function print_reports(reports::Vector{Dict{Symbol, Any}}, reference_available::Bool=false)
     title = "PlotCheck Report\n---\n"
 
-    no_issues = all((isempty(r) for r in reports))
+    all_reports_clear = all((no_issues(r) for r in reports))
 
     if reference_available
-        if no_issues
+        if all_reports_clear
             postscript = "Checked against reference plot."
         else
             postscript = "Checked against reference plot. Issues found."
         end
     else
-        if no_issues
+        if all_reports_clear
             postscript = "Basic checks performed."
         else
             postscript = "Basic checks performed. Issues found."

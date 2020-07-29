@@ -20,19 +20,19 @@ end
 function print_reports(reports::Vector{Dict{Symbol, Any}}, reference_available::Bool=false)
     title = "PlotCheck Report\n---\n"
 
-    issues_found = length(reports) > 0
+    no_issues = all((isempty(r) for r in reports))
 
     if reference_available
-        if issues_found
-            postscript = "Checked against reference plot. Issues found."
-        else
+        if no_issues
             postscript = "Checked against reference plot."
+        else
+            postscript = "Checked against reference plot. Issues found."
         end
     else
-        if issues_found
-            postscript = "Basic checks performed. Issues found."
-        else
+        if no_issues
             postscript = "Basic checks performed."
+        else
+            postscript = "Basic checks performed. Issues found."
         end
     end
 
